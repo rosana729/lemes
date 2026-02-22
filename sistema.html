@@ -1,0 +1,770 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🏥 Clínica Pediátrica - Panel Administrativo</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root { --primary: #FF6B6B; --secondary: #4ECDC4; --accent: #FFE66D; --dark: #2C3E50; --success: #27AE60; --warning: #F39C12; }
+        body { font-family: 'Poppins', 'Segoe UI', sans-serif; background: #f0f2f5; }
+
+        .login-container { display: flex; justify-content: center; align-items: center; min-height: 100vh; background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%); }
+        .login-box { background: white; padding: 3rem; border-radius: 15px; box-shadow: 0 10px 40px rgba(0,0,0,0.2); width: 100%; max-width: 400px; }
+        .login-box h1 { text-align: center; color: var(--primary); margin-bottom: 2rem; font-size: 1.8rem; }
+        .form-group { margin-bottom: 1.5rem; }
+        .form-group label { display: block; margin-bottom: 0.5rem; font-weight: 600; color: var(--dark); }
+        .form-group input { width: 100%; padding: 0.8rem; border: 2px solid #ddd; border-radius: 8px; font-size: 1rem; transition: all 0.3s; }
+        .form-group input:focus { outline: none; border-color: var(--primary); }
+        .btn { padding: 0.8rem 2rem; border: none; border-radius: 8px; font-size: 1rem; font-weight: 600; cursor: pointer; transition: all 0.3s; }
+        .btn-primary { background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%); color: white; width: 100%; }
+        .btn-logout { background: #e74c3c; color: white; padding: 0.5rem 1rem; border: none; border-radius: 5px; cursor: pointer; width: 100%; margin-top: 3rem; }
+
+        .dashboard { display: flex; min-height: 100vh; }
+        .sidebar { width: 250px; background: var(--dark); color: white; padding: 2rem; position: fixed; left: 0; top: 0; height: 100vh; overflow-y: auto; }
+        .sidebar .logo { font-size: 1.5rem; font-weight: bold; margin-bottom: 2rem; }
+        .sidebar .menu { list-style: none; }
+        .sidebar .menu li { margin-bottom: 1rem; }
+        .sidebar .menu a { color: white; text-decoration: none; padding: 0.8rem; display: block; border-radius: 8px; transition: all 0.3s; position: relative; }
+        .sidebar .menu a:hover, .sidebar .menu a.active { background: var(--primary); }
+        .notification-badge { position: absolute; top: 5px; right: 5px; background: #e74c3c; color: white; border-radius: 50%; width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; font-size: 0.7rem; font-weight: bold; }
+
+        .main-content { margin-left: 250px; flex: 1; padding: 2rem; }
+        .top-bar { display: flex; justify-content: space-between; align-items: center; background: white; padding: 1.5rem; border-radius: 10px; margin-bottom: 2rem; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
+        .top-bar .user-info { display: flex; align-items: center; gap: 1rem; }
+        .user-avatar { width: 40px; height: 40px; background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; }
+
+        .content { display: none; }
+        .content.active { display: block; }
+        .section-title { font-size: 2rem; color: var(--dark); margin-bottom: 2rem; }
+
+        .alert-box { padding: 1rem; border-radius: 8px; margin-bottom: 1rem; border-left: 4px solid; display: flex; align-items: center; gap: 1rem; }
+        .alert-danger { background: #f8d7da; border-color: #e74c3c; color: #721c24; }
+        .alert-warning { background: #fff3cd; border-color: var(--warning); color: #856404; }
+        .alert-success { background: #d4edda; border-color: var(--success); color: #155724; }
+        .alert-icon { font-size: 1.5rem; }
+
+        .reminder-card { background: white; padding: 1.5rem; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); margin-bottom: 1rem; border-left: 4px solid var(--primary); }
+        .reminder-time { font-size: 0.85rem; color: #666; margin-bottom: 0.3rem; font-weight: 600; }
+        .reminder-title { font-size: 1.1rem; font-weight: 600; color: var(--dark); margin-bottom: 0.5rem; }
+        .reminder-desc { color: #666; font-size: 0.95rem; margin-bottom: 1rem; }
+        .reminder-actions { display: flex; gap: 0.5rem; }
+        .reminder-actions button { padding: 0.4rem 1rem; border: none; border-radius: 5px; cursor: pointer; font-size: 0.85rem; font-weight: 600; }
+        .btn-confirm { background: var(--success); color: white; }
+        .btn-cancel { background: #e74c3c; color: white; }
+
+        .filter-btn { padding: 0.6rem 1.2rem; border: 2px solid #ddd; background: white; border-radius: 20px; cursor: pointer; transition: all 0.3s; font-weight: 600; margin-bottom: 1rem; margin-right: 0.5rem; }
+        .filter-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
+
+        .cards-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem; margin-bottom: 2rem; }
+        .card { background: white; padding: 1.5rem; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); border-left: 4px solid var(--primary); }
+        .card h3 { color: var(--primary); margin-bottom: 0.5rem; font-size: 0.9rem; text-transform: uppercase; }
+        .card .value { font-size: 2rem; font-weight: bold; color: var(--dark); }
+
+        @media (max-width: 768px) {
+            .sidebar { width: 0; transform: translateX(-100%); }
+            .main-content { margin-left: 0; }
+        }
+
+        /* Estilos para Modal */
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; }
+        .modal-overlay.active { display: flex; align-items: center; justify-content: center; }
+        .modal { background: white; padding: 1.5rem; border-radius: 15px; max-width: 420px; width: 90%; box-shadow: 0 10px 40px rgba(0,0,0,0.3); }
+        .modal h2 { color: var(--primary); margin-bottom: 1rem; font-size: 1.2rem; }
+        .modal-close { float: right; font-size: 1.5rem; cursor: pointer; color: #999; margin-top: -0.5rem; }
+        .modal-close:hover { color: var(--primary); }
+        .form-group { margin-bottom: 0.7rem; }
+        .form-group label { display: block; margin-bottom: 0.25rem; font-weight: 600; color: var(--dark); font-size: 0.85rem; }
+        .form-group input, .form-group select { width: 100%; padding: 0.5rem; border: 2px solid #ddd; border-radius: 6px; font-size: 0.9rem; transition: all 0.3s; }
+        .form-group input:focus, .form-group select:focus { outline: none; border-color: var(--primary); }
+        .modal-buttons { display: flex; gap: 0.8rem; margin-top: 1.2rem; }
+        .modal-buttons button { flex: 1; padding: 0.6rem; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; font-size: 0.85rem; }
+        .modal-btn-primary { background: var(--primary); color: white; }
+        .modal-btn-cancel { background: #ddd; color: var(--dark); }
+    </style>
+</head>
+<body>
+    <!-- LOGIN PAGE -->
+    <div id="loginPage" class="login-container">
+        <div class="login-box">
+            <h1>🏥 Clínica Pediátrica</h1>
+            <p style="text-align: center; color: #666; margin-bottom: 2rem;">Panel Administrativo</p>
+            <div class="form-group">
+                <label>Usuario</label>
+                <input type="text" id="username" placeholder="doctor@clinica.com" value="doctor@clinica.com">
+            </div>
+            <div class="form-group">
+                <label>Contraseña</label>
+                <input type="password" id="password" placeholder="password" value="password">
+            </div>
+            <button class="btn btn-primary" onclick="login()">Iniciar Sesión</button>
+        </div>
+    </div>
+
+    <!-- DASHBOARD -->
+    <div id="dashboard" style="display: none;">
+        <div class="sidebar">
+            <div class="logo">🏥 Clínica</div>
+            <ul class="menu">
+                <li><a href="#" class="menu-item active" onclick="showSection('inicio')">📊 Inicio</a></li>
+                <li>
+                    <a href="#" class="menu-item" onclick="showSection('recordatorios')">
+                        🔔 Recordatorios
+                        <span class="notification-badge" id="remindersCount">3</span>
+                    </a>
+                </li>
+                <li><a href="#" class="menu-item" onclick="showSection('citas')">📅 Citas</a></li>
+                <li><a href="#" class="menu-item" onclick="showSection('pacientes')">👥 Pacientes</a></li>
+            </ul>
+            <button class="btn-logout" onclick="logout()">Cerrar Sesión</button>
+        </div>
+
+        <div class="main-content">
+            <div class="top-bar">
+                <h2>Clínica Pediátrica</h2>
+                <div class="user-info">
+                    <div class="user-avatar">D</div>
+                    <div>
+                        <p style="margin: 0; font-weight: 600;">Dr. Usuario</p>
+                        <p style="margin: 0; font-size: 0.9rem; color: #666;">Médico Especialista</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- INICIO -->
+            <div id="inicio" class="content active">
+                <h1 class="section-title">📊 Dashboard</h1>
+                <div id="alertasInicio"></div>
+                <div class="cards-grid">
+                    <div class="card">
+                        <h3>👥 Pacientes</h3>
+                        <div class="value">24</div>
+                    </div>
+                    <div class="card">
+                        <h3>📅 Citas Hoy</h3>
+                        <div class="value">6</div>
+                    </div>
+                    <div class="card">
+                        <h3>🔔 Recordatorios</h3>
+                        <div class="value">3</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- RECORDATORIOS -->
+            <div id="recordatorios" class="content">
+                <h1 class="section-title">🔔 Recordatorios y Alertas</h1>
+                
+                <div style="margin-bottom: 2rem;">
+                    <button class="filter-btn active" onclick="filtrarRecordatorios('todos')">📌 Todos</button>
+                    <button class="filter-btn" onclick="filtrarRecordatorios('urgentes')">🚨 Urgentes</button>
+                    <button class="filter-btn" onclick="filtrarRecordatorios('citas')">📅 Citas</button>
+                    <button class="filter-btn" onclick="filtrarRecordatorios('seguimiento')">📋 Seguimiento</button>
+                    <button class="filter-btn" onclick="filtrarRecordatorios('medicinas')">💊 Medicinas</button>
+                </div>
+
+                <div id="recordatoriosList"></div>
+            </div>
+
+            <!-- CITAS -->
+            <div id="citas" class="content">
+                <h1 class="section-title">📅 Citas Programadas</h1>
+                <p>Próximas citas de hoy...</p>
+            </div>
+
+            <!-- PACIENTES -->
+            <div id="pacientes" class="content">
+                <h1 class="section-title">👥 Pacientes</h1>
+                
+                <div style="background: white; padding: 1.5rem; border-radius: 10px; margin-bottom: 2rem; box-shadow: 0 2px 10px rgba(0,0,0,0.05);">
+                    <input 
+                        type="text" 
+                        id="searchPacientes" 
+                        placeholder="🔍 Buscar paciente por nombre, edad, cédula o teléfono..." 
+                        style="width: 100%; padding: 1rem; border: 2px solid #ddd; border-radius: 8px; font-size: 1rem; transition: all 0.3s;"
+                        oninput="buscarPacientes()"
+                    >
+                </div>
+
+                <div id="pacientesList"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL AGENDAR CITA -->
+    <div id="modalCita" class="modal-overlay">
+        <div class="modal">
+            <span class="modal-close" onclick="cerrarModalCita()">✕</span>
+            <h2>📅 Agendar Cita</h2>
+            <div class="form-group">
+                <label>Paciente</label>
+                <input type="text" id="modalPaciente" readonly style="background: #f5f5f5;">
+            </div>
+            <div class="form-group">
+                <label>Teléfono WhatsApp</label>
+                <input type="text" id="modalTelefono" placeholder="+591 7 1234567">
+            </div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.6rem;">
+                <div class="form-group">
+                    <label>Fecha</label>
+                    <input type="date" id="modalFecha">
+                </div>
+                <div class="form-group">
+                    <label>Hora</label>
+                    <input type="time" id="modalHora">
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Especialidad</label>
+                <select id="modalEspecialidad">
+                    <option>Control Lactante</option>
+                    <option>Vacunación</option>
+                    <option>Control Niño Sano</option>
+                    <option>Consulta General</option>
+                    <option>Nutrición</option>
+                    <option>Desarrollo</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Notas (opcional)</label>
+                <input type="text" id="modalNotas" placeholder="Ej: Traer documentos, ayuno">
+            </div>
+            <div class="modal-buttons">
+                <button class="modal-btn-cancel" onclick="cerrarModalCita()">Cancelar</button>
+                <button class="modal-btn-primary" onclick="agendarCitaConWhatsApp()">✓ Agendar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL VER HISTORIAL -->
+    <div id="modalHistorial" class="modal-overlay">
+        <div class="modal" style="max-width: 500px; max-height: 80vh; overflow-y: auto;">
+            <span class="modal-close" onclick="cerrarHistorial()">✕</span>
+            <h2>📋 Historial Médico</h2>
+            <div id="historialContent"></div>
+        </div>
+    </div>
+
+    <script>
+        const pacientes = [
+            {
+                id: 1,
+                nombre: 'Juan Martínez Rodríguez',
+                edad: 5,
+                sexo: 'Masculino',
+                cedula: '1234567-8',
+                telefono: '+591 7 8765432',
+                alergias: 'Penicilina',
+                ultimaCita: '15/02/2026'
+            },
+            {
+                id: 2,
+                nombre: 'María López García',
+                edad: 3,
+                sexo: 'Femenino',
+                cedula: '9876543-2',
+                telefono: '+591 7 8123456',
+                alergias: 'Mariscos, Huevo',
+                ultimaCita: '17/02/2026'
+            },
+            {
+                id: 3,
+                nombre: 'Carlos Ruiz Flores',
+                edad: 2,
+                sexo: 'Masculino',
+                cedula: '5555555-5',
+                telefono: '+591 7 7654321',
+                alergias: 'Ninguna',
+                ultimaCita: '12/02/2026'
+            },
+            {
+                id: 4,
+                nombre: 'Sofia Herrera Martinez',
+                edad: 4,
+                sexo: 'Femenino',
+                cedula: '4444444-4',
+                telefono: '+591 7 5555555',
+                alergias: 'Lactosa',
+                ultimaCita: '18/02/2026'
+            },
+            {
+                id: 5,
+                nombre: 'Daniel Vargas López',
+                edad: 6,
+                sexo: 'Masculino',
+                cedula: '3333333-3',
+                telefono: '+591 7 6666666',
+                alergias: 'Ninguna',
+                ultimaCita: '14/02/2026'
+            },
+            {
+                id: 6,
+                nombre: 'Andrea García Mendez',
+                edad: 1,
+                sexo: 'Femenino',
+                cedula: '2222222-2',
+                telefono: '+591 7 7777777',
+                alergias: 'Ninguna',
+                ultimaCita: '19/02/2026'
+            }
+        ];
+
+        let pacientesFiltrados = pacientes;
+
+        const recordatorios = [
+            {
+                id: 1,
+                tipo: 'urgentes',
+                icon: '🚨',
+                tiempo: 'Hace 30 minutos',
+                titulo: 'Cita URGENTE - María López',
+                descripcion: 'Cita en 15 minutos - Consulta por fiebre alta. Paciente: María López, 3 años',
+                especialidad: 'Pediatría General',
+                estado: 'urgente'
+            },
+            {
+                id: 2,
+                tipo: 'citas',
+                icon: '📅',
+                tiempo: 'En 1 hora',
+                titulo: 'Próxima Cita - Juan Martínez',
+                descripcion: 'Control mensual. Paciente: Juan Martínez, 5 años. Dr. Carlos.',
+                especialidad: 'Control Mensual',
+                estado: 'confirmada'
+            },
+            {
+                id: 3,
+                tipo: 'seguimiento',
+                icon: '📋',
+                tiempo: 'Hoy a las 16:00',
+                titulo: 'Seguimiento - Carlos Ruiz',
+                descripcion: 'Seguimiento de gastroenteritis. Paciente: Carlos Ruiz, 2 años',
+                especialidad: 'Gastroenterología',
+                estado: 'pendiente'
+            },
+            {
+                id: 4,
+                tipo: 'medicinas',
+                icon: '💊',
+                tiempo: 'Mañana',
+                titulo: 'Recordatorio de Medicinas',
+                descripcion: 'Se acabó el stock de Amoxicilina. Requiere reorden urgente.',
+                especialidad: 'Farmacia',
+                estado: 'alerta'
+            },
+            {
+                id: 5,
+                tipo: 'citas',
+                icon: '📅',
+                tiempo: 'Mañana a las 09:00',
+                titulo: 'Cita Programada - Andrea García',
+                descripcion: 'Control neonatal. Paciente: Andrea García, 1 mes. Dra. María',
+                especialidad: 'Neonatología',
+                estado: 'confirmada'
+            },
+            {
+                id: 6,
+                tipo: 'seguimiento',
+                icon: '📋',
+                tiempo: 'En 3 días',
+                titulo: 'Seguimiento - Resultados de laboratorio',
+                descripcion: 'Se deben revisar los resultados de hemograma para Juan Martínez',
+                especialidad: 'Laboratorio',
+                estado: 'pendiente'
+            }
+        ];
+
+        let recordatoriosFiltrados = recordatorios;
+
+        function login() {
+            const username = document.getElementById('username').value;
+            if (!username) {
+                alert('Ingrese usuario');
+                return;
+            }
+            document.getElementById('loginPage').style.display = 'none';
+            document.getElementById('dashboard').style.display = 'flex';
+            mostrarRecordatorios();
+            mostrarAlertas();
+        }
+
+        function logout() {
+            document.getElementById('loginPage').style.display = 'flex';
+            document.getElementById('dashboard').style.display = 'none';
+        }
+
+        function showSection(section) {
+            document.querySelectorAll('.content').forEach(el => el.classList.remove('active'));
+            document.getElementById(section).classList.add('active');
+            
+            document.querySelectorAll('.menu-item').forEach(el => el.classList.remove('active'));
+            event.target.classList.add('active');
+
+            if (section === 'recordatorios') {
+                mostrarRecordatorios();
+            } else if (section === 'pacientes') {
+                mostrarPacientes();
+            }
+        }
+
+        function mostrarAlertas() {
+            const urgentes = recordatorios.filter(r => r.estado === 'urgente' || r.estado === 'alerta');
+            let html = '';
+            
+            urgentes.forEach(r => {
+                if (r.estado === 'urgente') {
+                    html += `
+                        <div class="alert-box alert-danger">
+                            <span class="alert-icon">🚨</span>
+                            <div style="flex: 1;">
+                                <strong>${r.titulo}</strong>
+                                <p style="margin: 0.3rem 0 0 0; font-size: 0.9rem;">${r.descripcion}</p>
+                            </div>
+                        </div>
+                    `;
+                }
+            });
+
+            document.getElementById('alertasInicio').innerHTML = html;
+        }
+
+        function mostrarRecordatorios() {
+            recordatoriosFiltrados = recordatorios;
+            renderRecordatorios();
+        }
+
+        function filtrarRecordatorios(tipo) {
+            if (tipo === 'todos') {
+                recordatoriosFiltrados = recordatorios;
+            } else {
+                recordatoriosFiltrados = recordatorios.filter(r => r.tipo === tipo);
+            }
+
+            document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+
+            renderRecordatorios();
+        }
+
+        function renderRecordatorios() {
+            let html = '';
+            recordatoriosFiltrados.forEach(r => {
+                const colorBorde = r.estado === 'urgente' ? '#e74c3c' : r.estado === 'confirmada' ? 'var(--success)' : 'var(--warning)';
+                html += `
+                    <div class="reminder-card" style="border-left-color: ${colorBorde}">
+                        <div class="reminder-time">${r.icon} ${r.tiempo}</div>
+                        <div class="reminder-title">${r.titulo}</div>
+                        <div class="reminder-desc">${r.descripcion}</div>
+                        <div style="font-size: 0.85rem; color: #999; margin-bottom: 1rem;">
+                            <strong>Especialidad:</strong> ${r.especialidad}
+                        </div>
+                        <div class="reminder-actions">
+                            ${r.tipo === 'citas' ? `
+                                <button class="btn-confirm" onclick="confirmarCita(${r.id})">✓ Confirmar</button>
+                                <button class="btn-cancel" onclick="cancelarCita(${r.id})">✕ Cancelar</button>
+                            ` : r.tipo === 'medicinas' ? `
+                                <button class="btn-confirm" onclick="registrarOrden(${r.id})">📦 Registrar Orden</button>
+                            ` : `
+                                <button class="btn-confirm" onclick="marcarRealizado(${r.id})">✓ Realizado</button>
+                                <button class="btn-cancel" onclick="posponer(${r.id})">⏰ Posponer</button>
+                            `}
+                        </div>
+                    </div>
+                `;
+            });
+            document.getElementById('recordatoriosList').innerHTML = html;
+        }
+
+        function confirmarCita(id) {
+            alert('✓ Cita confirmada');
+            actualizarRecordatorio(id);
+        }
+
+        function cancelarCita(id) {
+            alert('✕ Cita cancelada');
+            actualizarRecordatorio(id);
+        }
+
+        function marcarRealizado(id) {
+            alert('✓ Marcado como realizado');
+            actualizarRecordatorio(id);
+        }
+
+        function registrarOrden(id) {
+            alert('📦 Orden registrada');
+            actualizarRecordatorio(id);
+        }
+
+        function posponer(id) {
+            alert('⏰ Recordatorio pospuesto');
+            actualizarRecordatorio(id);
+        }
+
+        function actualizarRecordatorio(id) {
+            recordatorios.splice(recordatorios.findIndex(r => r.id === id), 1);
+            document.getElementById('remindersCount').textContent = recordatorios.length;
+            mostrarRecordatorios();
+            mostrarAlertas();
+        }
+
+        // Función de búsqueda para pacientes
+        function buscarPacientes() {
+            const termino = document.getElementById('searchPacientes').value.toLowerCase();
+            
+            if (termino === '') {
+                pacientesFiltrados = pacientes;
+            } else {
+                pacientesFiltrados = pacientes.filter(p => 
+                    p.nombre.toLowerCase().includes(termino) ||
+                    p.cedula.toLowerCase().includes(termino) ||
+                    p.telefono.toLowerCase().includes(termino) ||
+                    p.edad.toString().includes(termino)
+                );
+            }
+            
+            renderPacientes();
+        }
+
+        // Función para renderizar pacientes
+        function renderPacientes() {
+            let html = '';
+            
+            if (pacientesFiltrados.length === 0) {
+                html = '<div style="background: white; padding: 2rem; border-radius: 10px; text-align: center; color: #999;">No se encontraron pacientes 🔍</div>';
+            } else {
+                pacientesFiltrados.forEach(p => {
+                    html += `
+                        <div style="background: white; padding: 1.5rem; border-radius: 10px; margin-bottom: 1rem; box-shadow: 0 2px 10px rgba(0,0,0,0.05); border-left: 4px solid var(--primary);">
+                            <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 1rem;">
+                                <div>
+                                    <h3 style="color: var(--primary); margin-bottom: 0.5rem; font-size: 1.3rem;">👤 ${p.nombre}</h3>
+                                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1rem;">
+                                        <div>
+                                            <small style="color: #999; font-weight: 600;">EDAD</small>
+                                            <p style="margin: 0.3rem 0 0 0; font-size: 1.1rem; font-weight: 600;">${p.edad} años</p>
+                                        </div>
+                                        <div>
+                                            <small style="color: #999; font-weight: 600;">SEXO</small>
+                                            <p style="margin: 0.3rem 0 0 0; font-size: 1.1rem; font-weight: 600;">${p.sexo}</p>
+                                        </div>
+                                        <div>
+                                            <small style="color: #999; font-weight: 600;">DOCUMENTO</small>
+                                            <p style="margin: 0.3rem 0 0 0; font-size: 1.1rem; font-weight: 600;">${p.cedula}</p>
+                                        </div>
+                                        <div>
+                                            <small style="color: #999; font-weight: 600;">TELÉFONO</small>
+                                            <p style="margin: 0.3rem 0 0 0; font-size: 1.1rem; font-weight: 600;">${p.telefono}</p>
+                                        </div>
+                                        <div>
+                                            <small style="color: #999; font-weight: 600;">ALERGIAS</small>
+                                            <p style="margin: 0.3rem 0 0 0; font-size: 1.1rem; font-weight: 600;">${p.alergias}</p>
+                                        </div>
+                                        <div>
+                                            <small style="color: #999; font-weight: 600;">ÚLTIMA CITA</small>
+                                            <p style="margin: 0.3rem 0 0 0; font-size: 1.1rem; font-weight: 600;">${p.ultimaCita}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div style="display: flex; gap: 0.5rem; flex-direction: column;">
+                                    <button class="btn btn-primary" style="padding: 0.6rem 1rem; width: auto; font-size: 0.9rem;" onclick="abrirHistorial(${p.id}, '${p.nombre}')">👁️ Ver Historial</button>
+                                    <button class="btn btn-primary" style="padding: 0.6rem 1rem; width: auto; font-size: 0.9rem; background: var(--success);" onclick="abrirModalCita(${p.id}, '${p.nombre}', '${p.telefono}');">📅 Agendar Cita</button>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                });
+            }
+            
+            document.getElementById('pacientesList').innerHTML = html;
+        }
+
+        // Mostrar pacientes al cargar
+        function mostrarPacientes() {
+            pacientesFiltrados = pacientes;
+            renderPacientes();
+        }
+
+        // Funciones para Modal de Cita
+        function abrirModalCita(pacienteId, pacienteNombre, telefonoPaciente) {
+            document.getElementById('modalPaciente').value = pacienteNombre;
+            document.getElementById('modalTelefono').value = telefonoPaciente;
+            document.getElementById('modalFecha').value = '';
+            document.getElementById('modalHora').value = '';
+            document.getElementById('modalEspecialidad').value = 'Control Lactante';
+            document.getElementById('modalNotas').value = '';
+            
+            // Guardar ID del paciente en el modal
+            document.getElementById('modalCita').dataset.pacienteId = pacienteId;
+            
+            document.getElementById('modalCita').classList.add('active');
+        }
+
+        function cerrarModalCita() {
+            document.getElementById('modalCita').classList.remove('active');
+        }
+
+        // Datos de historial médico por paciente
+        const historialesMedicos = {
+            1: { // Juan Martínez
+                citas: [
+                    { fecha: '15/02/2026', especialidad: 'Control Lactante', doctor: 'Dr. Carlos', diagnostico: 'Sano', notas: 'Control de rutina' },
+                    { fecha: '08/02/2026', especialidad: 'Vacunación', doctor: 'Dra. María', diagnostico: 'Vacunas al día', notas: 'Aplicadas: DPT, Polio' },
+                    { fecha: '01/02/2026', especialidad: 'Control Niño Sano', doctor: 'Dr. Juan', diagnostico: 'Crecimiento normal', notas: 'Peso: 18kg, Talla: 110cm' }
+                ]
+            },
+            2: { // María López
+                citas: [
+                    { fecha: '17/02/2026', especialidad: 'Control Lactante', doctor: 'Dra. Ana', diagnostico: 'Sano', notas: 'Alimentación normal' },
+                    { fecha: '10/02/2026', especialidad: 'Consulta General', doctor: 'Dr. Carlos', diagnostico: 'Otitis leve', notas: 'Prescrito antibiótico' }
+                ]
+            },
+            3: { // Carlos Ruiz
+                citas: [
+                    { fecha: '12/02/2026', especialidad: 'Gastroenterología', doctor: 'Dr. Juan', diagnostico: 'Gastroenteritis', notas: 'Dieta blanda por 5 días' },
+                    { fecha: '05/02/2026', especialidad: 'Control Niño Sano', doctor: 'Dra. María', diagnostico: 'Sano', notas: 'Desarrollo normal' }
+                ]
+            },
+            4: { // Sofia Herrera
+                citas: [
+                    { fecha: '18/02/2026', especialidad: 'Nutrición', doctor: 'Dra. Ana', diagnostico: 'Nutrición adecuada', notas: 'Aumentar ingesta de calcio' }
+                ]
+            },
+            5: { // Daniel Vargas
+                citas: [
+                    { fecha: '14/02/2026', especialidad: 'Desarrollo', doctor: 'Dr. Carlos', diagnostico: 'Desarrollo óptimo', notas: 'Hito motriz alcanzado' }
+                ]
+            },
+            6: { // Andrea García
+                citas: [
+                    { fecha: '19/02/2026', especialidad: 'Neonatología', doctor: 'Dra. María', diagnostico: 'Recién nacida sana', notas: 'Control postnatal' }
+                ]
+            }
+        };
+
+        function abrirHistorial(pacienteId, pacienteNombre) {
+            const historial = historialesMedicos[pacienteId] || { citas: [] };
+            let html = `<p style="color: var(--primary); font-weight: 600; margin-bottom: 1rem;">👤 ${pacienteNombre}</p>`;
+            
+            if (historial.citas.length === 0) {
+                html += '<p style="color: #999;">No hay citas registradas</p>';
+            } else {
+                historial.citas.forEach(cita => {
+                    html += `
+                        <div style="background: #f9f9f9; padding: 1rem; border-radius: 8px; margin-bottom: 1rem; border-left: 4px solid var(--primary);">
+                            <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 0.5rem;">
+                                <div>
+                                    <p style="margin: 0; font-weight: 600; color: var(--primary);">${cita.especialidad}</p>
+                                    <p style="margin: 0.3rem 0 0 0; font-size: 0.85rem; color: #666;">${cita.fecha}</p>
+                                </div>
+                                <span style="background: var(--success); color: white; padding: 0.3rem 0.8rem; border-radius: 20px; font-size: 0.75rem; font-weight: 600;">✓ ${cita.diagnostico}</span>
+                            </div>
+                            <p style="margin: 0.5rem 0 0 0; font-size: 0.9rem;">👨‍⚕️ <strong>${cita.doctor}</strong></p>
+                            <p style="margin: 0.5rem 0 0 0; font-size: 0.85rem; color: #555;">📝 ${cita.notas}</p>
+                        </div>
+                    `;
+                });
+            }
+            
+            document.getElementById('historialContent').innerHTML = html;
+            document.getElementById('modalHistorial').classList.add('active');
+        }
+
+        function cerrarHistorial() {
+            document.getElementById('modalHistorial').classList.remove('active');
+        }
+
+        function agendarCitaConWhatsApp() {
+            const pacienteNombre = document.getElementById('modalPaciente').value;
+            const telefono = document.getElementById('modalTelefono').value;
+            const fecha = document.getElementById('modalFecha').value;
+            const hora = document.getElementById('modalHora').value;
+            const especialidad = document.getElementById('modalEspecialidad').value;
+            const notas = document.getElementById('modalNotas').value;
+
+            // Validar que los datos estén completos
+            if (!fecha || !hora || !telefono) {
+                alert('⚠️ Por favor, completa fecha, hora y teléfono');
+                return;
+            }
+
+            // Limpiar y formatear teléfono correctamente
+            let telefonoLimpio = telefono.replace(/\D/g, '').trim();
+            
+            console.log('Teléfono original:', telefono);
+            console.log('Teléfono limpio:', telefonoLimpio);
+            
+            // Convertir a formato WhatsApp
+            // Si ya empieza con 549 (Argentina), usarlo directo
+            if (telefonoLimpio.startsWith('549')) {
+                // Ya está en formato correcto
+            }
+            // Si empieza con 54 pero no tiene el 9 (ej: 543756505366)
+            else if (telefonoLimpio.startsWith('54')) {
+                // Reemplazar 54 con 549
+                telefonoLimpio = '549' + telefonoLimpio.substring(2);
+            }
+            // Si empieza con 9 (ej: 93756505366)
+            else if (telefonoLimpio.startsWith('9')) {
+                telefonoLimpio = '54' + telefonoLimpio;
+            }
+            // Si es solo número local (ej: 3756505366)
+            else {
+                telefonoLimpio = '549' + telefonoLimpio;
+            }
+            
+            console.log('Teléfono final para WhatsApp:', telefonoLimpio);
+
+            // Crear mensaje con datos de cita
+            const mensaje = `¡Hola ${pacienteNombre}! 👋
+
+Confirmación de cita en Clínica Pediátrica
+
+📅 FECHA: ${fecha}
+⏰ HORA: ${hora}
+🏥 ESPECIALIDAD: ${especialidad}
+${notas ? '📝 NOTAS: ' + notas : ''}
+
+Por favor, confirma tu asistencia.
+¡Te esperamos! 🏥❤️`;
+
+            // Crear enlace WhatsApp Click-to-Chat
+            const urlWhatsApp = `https://wa.me/${telefonoLimpio}?text=${encodeURIComponent(mensaje)}`;
+            
+            console.log('URL WhatsApp:', urlWhatsApp);
+
+            // Mostrar instrucción
+            alert('📱 Se abrirá WhatsApp ahora.\n\n' +
+                  '⚠️ IMPORTANTE: Primero ENVÍA el mensaje en WhatsApp\n\n' +
+                  'Después confirma aquí que lo enviaste para registrar la cita.');
+
+            // Abrir WhatsApp automáticamente en nueva pestaña
+            window.open(urlWhatsApp, '_blank');
+
+            // Pedir confirmación de que envió el mensaje
+            setTimeout(() => {
+                const confirmar = confirm('✅ ¿Ya enviaste el mensaje por WhatsApp?\n\n' +
+                                         'Haz clic en "Aceptar" para confirmar la cita\n' +
+                                         'o "Cancelar" para volver al formulario');
+                
+                if (confirmar) {
+                    alert('✅ ¡Cita confirmada y registrada!\n\n' +
+                          '📅 Fecha: ' + fecha + '\n' +
+                          '⏰ Hora: ' + hora + '\n' +
+                          '🏥 Especialidad: ' + especialidad + '\n\n' +
+                          'El paciente recibirá la confirmación por WhatsApp');
+                    cerrarModalCita();
+                }
+                // Si cancela, el modal sigue abierto
+            }, 500);
+        }
+
+        // Cerrar modal al hacer clic fuera
+        window.addEventListener('click', function(event) {
+            const modal = document.getElementById('modalCita');
+            if (event.target === modal) {
+                cerrarModalCita();
+            }
+        });
+    </script>
+</body>
+</html>
