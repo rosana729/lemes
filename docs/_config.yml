@@ -1,0 +1,9 @@
+title: Clínica Pediátrica
+description: Sistema moderno de gestión clínica pediátrica con FastAPI + Supabase
+author: Rosana729
+url: https://rosana729.github.io/lemes
+
+# GitHub Pages configuration
+remote_theme: null
+plugins: []
+markdown: kramdown

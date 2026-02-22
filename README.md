@@ -1,6 +1,39 @@
 # 🏥 Clínica Pediátrica - FastAPI + Supabase
 
+[![FastAPI](https://img.shields.io/badge/FastAPI-0.100.0-009688?style=flat&logo=fastapi)](https://fastapi.tiangolo.com/)
+[![Python](https://img.shields.io/badge/Python-3.9+-3776ab?style=flat&logo=python)](https://www.python.org/)
+[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-Supabase-336791?style=flat&logo=postgresql)](https://supabase.com/)
+[![License](https://img.shields.io/badge/License-MIT-green?style=flat)](LICENSE)
+[![Status](https://img.shields.io/badge/Status-Production%20Ready-brightgreen?style=flat)]()
+
 **Sistema moderno para gestión de consultorios pediátricos**
+
+> Una API REST completa y escalable para administrar pacientes, consultas, gastos e ingresos de forma eficiente
+
+---
+
+## 🌐 **[VER SITIO WEB EN GITHUB PAGES](https://rosana729.github.io/lemes)** ⭐
+
+📖 **[Guía Rápida GitHub Pages](QUICK_START_GITHUB_PAGES.md)** | 🎬 **[Crear GIF Demostrativo](GIF_DEMO.md)**
+
+---
+
+## 🎬 Demostración
+
+### Panel Swagger UI (Documentación Interactiva)
+```
+http://localhost:8000/docs
+```
+
+### Endpoints principales:
+- 📊 **Estadísticas**: `GET /api/estadisticas`
+- 👥 **Pacientes**: CRUD completo
+- 🏥 **Consultas**: Con IMC calculado automáticamente
+- 💰 **Gastos/Ingresos**: Control financiero
+
+**[Ver ejemplos de uso](#-ejemplos-de-uso)**
+
+---
 
 ## 📚 Características
 
@@ -23,6 +56,35 @@
 | **Validación** | Pydantic | 2.5.0 |
 | **Seguridad** | Python-Jose + Passlib | 3.3.0 |
 | **Python** | 3.9+ | Recomendado 3.11 |
+
+## ⚡ Inicio Rápido (5 minutos)
+
+```bash
+# 1. Clonar proyecto
+git clone https://github.com/rosana729/lemes.git
+cd lemes
+
+# 2. Crear ambiente virtual
+python -m venv venv
+.\venv\Scripts\Activate.ps1  # Windows PowerShell
+# o: source venv/bin/activate  # Linux/Mac
+
+# 3. Instalar dependencias
+pip install -r requirements.txt
+
+# 4. Configurar variables de entorno
+# Crea .env (copia de .env.example) y configura:
+# - SUPABASE_URL
+# - SUPABASE_KEY
+# - DATABASE_URL
+# - SECRET_KEY
+
+# 5. Ejecutar servidor
+python main.py
+
+# ✅ API disponible en http://localhost:8000
+# 📖 Documentación en http://localhost:8000/docs
+```
 
 ## 📂 Estructura del Proyecto
 
@@ -292,35 +354,74 @@ curl -X POST "http://localhost:8000/api/ingresos" \
 - fecha_ingreso, created_at
 - Relaciones: un paciente, una consulta
 
-## ⚙️ Configuración Supabase
+## ⚙️ Integración Supabase (Base de Datos en la Nube)
 
-### 1. Crear cuenta (gratis)
+### ¿Por qué Supabase?
 
-Visita https://supabase.com y regístrate
+✨ **PostgreSQL en la nube** | 🆓 **Gratuito** | 🔐 **Seguro** | ⚡ **Rápido**
 
-### 2. Crear proyecto
+- Base de datos PostgreSQL con SLA 99.9%
+- 500MB de almacenamiento gratuito
+- API automática REST/GraphQL
+- Autenticación integrada con JWT
+- Dashboard admin intuitivo
+- Backups automáticos diarios
 
-- Click en "New project"
-- Nombre: "clinica-pediatrica"
-- Base de datos: PostgreSQL
-- Región: La más cercana a ti
-- Contraseña: Copia y guarda en .env
+### Configuración Paso a Paso
 
-### 3. Obtener credenciales
+#### 1️⃣ Crear cuenta (gratis)
 
-En Settings > API:
-- `SUPABASE_URL`: URL del proyecto
-- `SUPABASE_KEY`: anon key (pública)
+1. Ve a https://supabase.com
+2. Click en "Start your project"
+3. Registrate con GitHub (recomendado)
 
-En Settings > Database:
-- Usuario: `postgres`
-- Contraseña: La que configuraste
-- Port: 5432
+#### 2️⃣ Crear proyecto
 
-Construye DATABASE_URL:
+1. Click en "New project"
+2. Completa el formulario:
+   - **Nombre**: `clinica-pediatrica`
+   - **Contraseña**: Copia y guarda en `.env` como `DATABASE_PASSWORD`
+   - **Región**: Selecciona la más cercana a ti
+3. Espera a que se cree (5 minutos max)
+
+#### 3️⃣ Obtener credenciales en Settings > API
+
+```env
+SUPABASE_URL=https://[PROJECT-ID].supabase.co
+SUPABASE_KEY=[ANON-PUBLIC-KEY]
 ```
-postgresql://postgres:contraseña@host:5432/postgres
+
+#### 4️⃣ Obtener DATABASE_URL en Settings > Database
+
+```env
+DATABASE_URL=postgresql://postgres:[PASSWORD]@[HOST]:5432/postgres
 ```
+
+**Ejemplo completo:**
+```env
+SUPABASE_URL=https://abc123xyz.supabase.co
+SUPABASE_KEY=eyJhbGc...
+DATABASE_URL=postgresql://postgres:Mi_Contraseña123@abc123xyz.supabase.co:5432/postgres
+```
+
+#### 5️⃣ Verificar conexión
+
+```bash
+python main.py
+```
+
+Si ves este mensaje: ✅ **¡Conectado a Supabase!**
+```
+INFO:     Uvicorn running on http://127.0.0.1:8000
+```
+
+### ✨ Próximas funcionalidades con Supabase
+
+- 📱 **Aplicación móvil** (conectar directamente a Supabase)
+- 🔔 **Real-time updates** (cambios en tiempo real)
+- 🔐 **Autenticación avanzada** (Google, GitHub, etc)
+- 📊 **Analytics mejorados** (con Supabase Studio)
+- 🌍 **Disponible globalmente** (acceso desde cualquier lugar)
 
 ## 🔒 Seguridad
 
@@ -337,6 +438,46 @@ postgresql://postgres:contraseña@host:5432/postgres
 - **Uvicorn**: Servidor ASGI muy rápido
 - **PostgreSQL**: Índices automáticos en campos frecuentes
 - **Connection pooling**: Máx 10 conexiones concurrentes
+
+## 🎬 Crear GIF Demostrativo para GitHub
+
+Para mejorar la visualización en tu perfil de GitHub, puedes crear un GIF mostrando el API en acción:
+
+### Opción 1: ScreenToGif (Windows) ⭐ **Recomendado**
+
+1. Descarga [ScreenToGif](https://www.screentogif.com/)
+2. **Inicia tu servidor**: `python main.py`
+3. Abre en navegador: `http://localhost:8000/docs`
+4. Graba un GIF:
+   - Click en "Record"
+   - Demuestra: crear paciente → crear consulta → ver estadísticas
+   - Guarda como `.gif`
+5. Coloca el GIF en la carpeta `docs/demo.gif`
+6. Agrega al README:
+   ```markdown
+   ![Demo API](docs/demo.gif)
+   ```
+
+### Opción 2: Usando FFmpeg (Multiplataforma)
+
+```bash
+# 1. Instala FFmpeg (https://ffmpeg.org/download.html)
+
+# 2. Graba video con ffmpeg
+ffmpeg -f gdigrab -framerate 30 -i desktop output.mp4
+
+# 3. Convierte a GIF
+ffmpeg -i output.mp4 -vf "scale=1280:-1" -t 10 demo.gif
+```
+
+### Opción 3: LiceCAP (Multiplataforma + Ligero)
+
+Herramienta muy ligera perfecta para grabar GIFs:
+- Descarga: https://www.cockos.com/licecap/
+- Graba directamente en GIF
+- Perfecto para demostraciones cortas (~10 seg)
+
+---
 
 ## 🧪 Testing
 

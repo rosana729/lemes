@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🏥 Clínica Pediátrica - FastAPI + Supabase</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <!-- Navegación -->
+    <nav class="navbar">
+        <div class="container">
+            <div class="logo">🏥 Clínica Pediátrica</div>
+            <ul class="nav-links">
+                <li><a href="#features">Características</a></li>
+                <li><a href="#stack">Stack</a></li>
+                <li><a href="#quick-start">Inicio Rápido</a></li>
+                <li><a href="https://github.com/rosana729/lemes" target="_blank"><i class="fab fa-github"></i> GitHub</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="hero-content">
+            <h1>🏥 Sistema de Gestión Clínica Pediátrica</h1>
+            <p>API REST moderna built con <strong>FastAPI</strong> + <strong>PostgreSQL</strong> en <strong>Supabase</strong></p>
+            <div class="hero-buttons">
+                <a href="#quick-start" class="btn btn-primary">
+                    <i class="fas fa-rocket"></i> Iniciar
+                </a>
+                <a href="https://github.com/rosana729/lemes" class="btn btn-secondary" target="_blank">
+                    <i class="fab fa-github"></i> Ver en GitHub
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features -->
+    <section id="features" class="features">
+        <div class="container">
+            <h2>✨ Características</h2>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">⚡</div>
+                    <h3>API Ultra Rápida</h3>
+                    <p>FastAPI con Uvicorn: 2000+ req/s</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">📊</div>
+                    <h3>Dashboard Estadísticas</h3>
+                    <p>Análisis en tiempo real de ingresos y gastos</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🔐</div>
+                    <h3>Seguridad</h3>
+                    <p>JWT, bcrypt, SQL injection prevention</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">☁️</div>
+                    <h3>Base de Datos Cloud</h3>
+                    <p>PostgreSQL en Supabase (99.9% uptime)</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">📱</div>
+                    <h3>API REST Moderna</h3>
+                    <p>Endpoints CRUD completos + documentación auto</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🧪</div>
+                    <h3>Testeable</h3>
+                    <p>Pytest + validación automática con Pydantic</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Stack -->
+    <section id="stack" class="stack">
+        <div class="container">
+            <h2>🛠️ Stack Tecnológico</h2>
+            <table class="stack-table">
+                <tr>
+                    <th>Componente</th>
+                    <th>Tecnología</th>
+                    <th>Versión</th>
+                </tr>
+                <tr>
+                    <td><i class="fas fa-code"></i> Backend</td>
+                    <td>FastAPI</td>
+                    <td>0.100.0</td>
+                </tr>
+                <tr>
+                    <td><i class="fas fa-server"></i> Servidor</td>
+                    <td>Uvicorn</td>
+                    <td>0.23.0</td>
+                </tr>
+                <tr>
+                    <td><i class="fas fa-database"></i> ORM</td>
+                    <td>SQLAlchemy</td>
+                    <td>2.0.20</td>
+                </tr>
+                <tr>
+                    <td><i class="fas fa-cloud"></i> Base de Datos</td>
+                    <td>PostgreSQL (Supabase)</td>
+                    <td>15+</td>
+                </tr>
+                <tr>
+                    <td><i class="fas fa-check-circle"></i> Validación</td>
+                    <td>Pydantic</td>
+                    <td>2.0.3</td>
+                </tr>
+                <tr>
+                    <td><i class="fas fa-python"></i> Lenguaje</td>
+                    <td>Python</td>
+                    <td>3.9+</td>
+                </tr>
+            </table>
+        </div>
+    </section>
+
+    <!-- Quick Start -->
+    <section id="quick-start" class="quick-start">
+        <div class="container">
+            <h2>🚀 Inicio Rápido (5 minutos)</h2>
+            <div class="code-block">
+                <pre><code>
+# 1. Clonar proyecto
+git clone https://github.com/rosana729/lemes.git
+cd lemes
+
+# 2. Crear ambiente virtual
+python -m venv venv
+.\venv\Scripts\Activate.ps1  # Windows PowerShell
+
+# 3. Instalar dependencias
+pip install -r requirements.txt
+
+# 4. Configurar variables de entorno
+# Edita .env con tus credenciales de Supabase
+
+# 5. Ejecutar servidor
+python main.py
+
+✅ API disponible en http://localhost:8000
+📖 Documentación en http://localhost:8000/docs
+                </code></pre>
+            </div>
+        </div>
+    </section>
+
+    <!-- APIs -->
+    <section id="api" class="api-section">
+        <div class="container">
+            <h2>📡 Endpoints Principales</h2>
+            <div class="endpoints-grid">
+                <div class="endpoint">
+                    <h3><span class="get">GET</span> /api/estadisticas</h3>
+                    <p>Dashboard financiero en tiempo real</p>
+                </div>
+                <div class="endpoint">
+                    <h3><span class="crud">CRUD</span> /api/pacientes</h3>
+                    <p>Gestión completa de pacientes</p>
+                </div>
+                <div class="endpoint">
+                    <h3><span class="crud">CRUD</span> /api/consultas</h3>
+                    <p>Registro de consultas con IMC automático</p>
+                </div>
+                <div class="endpoint">
+                    <h3><span class="crud">CRUD</span> /api/gastos</h3>
+                    <p>Control de gastos operacionales</p>
+                </div>
+                <div class="endpoint">
+                    <h3><span class="crud">CRUD</span> /api/ingresos</h3>
+                    <p>Registro de ingresos por consulta</p>
+                </div>
+                <div class="endpoint">
+                    <h3><span class="get">GET</span> /docs</h3>
+                    <p>Documentación Swagger interactiva</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="cta">
+        <div class="container">
+            <h2>¿Listo para usar Clínica Pediátrica?</h2>
+            <div class="cta-buttons">
+                <a href="https://github.com/rosana729/lemes#readme" class="btn btn-primary" target="_blank">
+                    Ver README Completo
+                </a>
+                <a href="https://github.com/rosana729/lemes" class="btn btn-secondary" target="_blank">
+                    Ir a GitHub
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <p>🏥 Clínica Pediátrica | FastAPI + Supabase | MIT License</p>
+            <p>Desarrollado con ❤️ | <a href="https://github.com/rosana729" target="_blank">github.com/rosana729</a></p>
+            <p>© 2026 - Todos los derechos reservados</p>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>
