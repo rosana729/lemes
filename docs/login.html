@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🏥 Login - Clínica Pediátrica</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        .login-container {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+        }
+
+        .login-box {
+            background: var(--card-bg);
+            padding: 50px;
+            border-radius: 15px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            width: 100%;
+            max-width: 450px;
+            border: 1px solid rgba(0, 212, 255, 0.2);
+        }
+
+        .login-header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .login-header h1 {
+            font-size: 2.5rem;
+            color: var(--primary-color);
+            margin-bottom: 10px;
+        }
+
+        .login-header p {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: var(--text-light);
+            font-weight: 500;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid rgba(0, 212, 255, 0.2);
+            border-radius: 8px;
+            background: rgba(0, 212, 255, 0.05);
+            color: var(--text-light);
+            font-size: 1rem;
+            transition: all 0.3s;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            background: rgba(0, 212, 255, 0.1);
+            box-shadow: 0 0 10px rgba(0, 212, 255, 0.2);
+        }
+
+        .form-group input::placeholder {
+            color: var(--text-muted);
+        }
+
+        .login-btn {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: var(--dark-bg);
+            border: none;
+            border-radius: 8px;
+            font-weight: bold;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .login-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(0, 212, 255, 0.3);
+        }
+
+        .login-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .message {
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: none;
+            font-size: 0.9rem;
+        }
+
+        .message.success {
+            background: rgba(81, 207, 102, 0.2);
+            color: #51cf66;
+            border: 1px solid #51cf66;
+            display: block;
+        }
+
+        .message.error {
+            background: rgba(255, 107, 107, 0.2);
+            color: #ff6b6b;
+            border: 1px solid #ff6b6b;
+            display: block;
+        }
+
+        .demo-users {
+            background: rgba(0, 212, 255, 0.1);
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 30px;
+            border: 1px solid rgba(0, 212, 255, 0.2);
+        }
+
+        .demo-users h3 {
+            color: var(--primary-color);
+            margin-bottom: 15px;
+            font-size: 0.9rem;
+        }
+
+        .demo-user {
+            background: var(--dark-bg);
+            padding: 10px;
+            margin-bottom: 10px;
+            border-radius: 5px;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+
+        .demo-user strong {
+            color: var(--primary-color);
+        }
+
+        .spinner {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .back-home {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .back-home a {
+            color: var(--primary-color);
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: color 0.3s;
+        }
+
+        .back-home a:hover {
+            color: var(--secondary-color);
+        }
+
+        @media (max-width: 480px) {
+            .login-box {
+                padding: 30px 20px;
+            }
+
+            .login-header h1 {
+                font-size: 1.8rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <div class="login-box">
+            <div class="login-header">
+                <h1>🏥 Clínica Pediátrica</h1>
+                <p>Inicia sesión para acceder al dashboard</p>
+            </div>
+
+            <div id="message" class="message"></div>
+
+            <form id="loginForm">
+                <div class="form-group">
+                    <label for="email"><i class="fas fa-envelope"></i> Email</label>
+                    <input 
+                        type="email" 
+                        id="email" 
+                        placeholder="doctor@clinica.com" 
+                        required
+                    >
+                </div>
+
+                <div class="form-group">
+                    <label for="password"><i class="fas fa-lock"></i> Contraseña</label>
+                    <input 
+                        type="password" 
+                        id="password" 
+                        placeholder="Tu contraseña" 
+                        required
+                    >
+                </div>
+
+                <button type="submit" class="login-btn" id="loginBtn">
+                    <span id="btnText">Iniciar Sesión</span>
+                </button>
+            </form>
+
+            <div class="demo-users">
+                <h3>📝 Usuarios de Prueba (desde Supabase):</h3>
+                <div class="demo-user">
+                    <strong>👨‍⚕️ Doctor:</strong><br>
+                    doctor@clinica.com / 123456
+                </div>
+                <div class="demo-user">
+                    <strong>👩‍⚕️ Secretaria:</strong><br>
+                    secretaria@clinica.com / 123456
+                </div>
+                <div class="demo-user">
+                    <strong>🔐 Admin:</strong><br>
+                    admin@clinica.com / 123456
+                </div>
+            </div>
+
+            <div class="back-home">
+                <a href="index.html"><i class="fas fa-arrow-left"></i> Volver al inicio</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Configuración de Supabase - REEMPLAZA CON TUS VALORES
+        const SUPABASE_URL = 'https://your-project.supabase.co';
+        const SUPABASE_KEY = 'your-anon-key';
+
+        let supabase;
+
+        // Inicializar Supabase
+        function initSupabase() {
+            try {
+                supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+                console.log('✅ Supabase inicializado');
+            } catch (error) {
+                console.error('❌ Error inicializando Supabase:', error);
+                showMessage('Error configurando Supabase. Contacta al administrador.', 'error');
+            }
+        }
+
+        // Mostrar mensajes
+        function showMessage(text, type) {
+            const messageEl = document.getElementById('message');
+            messageEl.textContent = text;
+            messageEl.className = `message ${type}`;
+            
+            if (type === 'success') {
+                setTimeout(() => {
+                    window.location.href = 'dashboard.html';
+                }, 1500);
+            }
+        }
+
+        // Función de login
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            if (!supabase) {
+                showMessage('❌ Supabase no está configurado correctamente', 'error');
+                return;
+            }
+
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const loginBtn = document.getElementById('loginBtn');
+            const btnText = document.getElementById('btnText');
+
+            // Mostrar loading
+            loginBtn.disabled = true;
+            btnText.innerHTML = '<span class="spinner"></span> Autenticando...';
+
+            try {
+                // Intentar login con Supabase Auth
+                const { data, error } = await supabase.auth.signInWithPassword({
+                    email: email,
+                    password: password
+                });
+
+                if (error) {
+                    throw new Error(error.message);
+                }
+
+                if (data.user) {
+                    // Guardar datos del usuario
+                    localStorage.setItem('user', JSON.stringify(data.user));
+                    localStorage.setItem('token', data.session.access_token);
+                    
+                    showMessage('✅ Login exitoso. Redirigiendo...', 'success');
+                }
+            } catch (error) {
+                console.error('Error de login:', error);
+                showMessage(`❌ Error: ${error.message}`, 'error');
+                loginBtn.disabled = false;
+                btnText.textContent = 'Iniciar Sesión';
+            }
+        });
+
+        // Inicializar
+        window.addEventListener('load', () => {
+            initSupabase();
+            
+            // Si ya está logueado, redirigir a dashboard
+            const user = localStorage.getItem('user');
+            if (user) {
+                window.location.href = 'dashboard.html';
+            }
+        });
+    </script>
+</body>
+</html>
