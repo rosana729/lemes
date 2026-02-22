@@ -7,6 +7,7 @@
     <link rel="stylesheet" href="style.css">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="config.js"></script>
     <style>
         .login-container {
             min-height: 100vh;
@@ -203,6 +204,10 @@
 
             <div id="message" class="message"></div>
 
+            <div style="background: rgba(0, 212, 255, 0.1); padding: 10px; border-radius: 8px; margin-bottom: 20px; font-size: 0.85rem; color: var(--text-muted); border-left: 3px solid var(--primary-color);">
+                <div id="debugInfo">⏳ Cargando...</div>
+            </div>
+
             <form id="loginForm">
                 <div class="form-group">
                     <label for="email"><i class="fas fa-envelope"></i> Email</label>
@@ -252,20 +257,27 @@
     </div>
 
     <script>
-        // Configuración de Supabase - REEMPLAZA CON TUS VALORES
-        const SUPABASE_URL = 'https://your-project.supabase.co';
-        const SUPABASE_KEY = 'your-anon-key';
-
-        let supabase;
+        // Configuración desde config.js
+        let supabase = null;
+        const isConfigured = SUPABASE_CONFIG.URL !== 'https://your-project.supabase.co';
 
         // Inicializar Supabase
         function initSupabase() {
             try {
-                supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-                console.log('✅ Supabase inicializado');
+                if (isConfigured) {
+                    supabase = window.supabase.createClient(SUPABASE_CONFIG.URL, SUPABASE_CONFIG.KEY);
+                    console.log('✅ Supabase inicializado correctamente');
+                    document.getElementById('debugInfo').innerHTML = '✅ <strong>Supabase:</strong> Conectado';
+                } else if (SUPABASE_CONFIG.DEMO_MODE) {
+                    console.log('🎮 MODO DEMOSTRACIÓN activado');
+                    document.getElementById('debugInfo').innerHTML = '🎮 <strong>Modo:</strong> Demostración (sin Supabase)';
+                } else {
+                    console.error('❌ Supabase no está configurado');
+                    document.getElementById('debugInfo').innerHTML = '❌ <strong>Error:</strong> Supabase no configurado. Abre config.js';
+                }
             } catch (error) {
                 console.error('❌ Error inicializando Supabase:', error);
-                showMessage('Error configurando Supabase. Contacta al administrador.', 'error');
+                document.getElementById('debugInfo').innerHTML = '❌ <strong>Error:</strong> ' + error.message;
             }
         }
 
@@ -286,11 +298,6 @@
         document.getElementById('loginForm').addEventListener('submit', async (e) => {
             e.preventDefault();
 
-            if (!supabase) {
-                showMessage('❌ Supabase no está configurado correctamente', 'error');
-                return;
-            }
-
             const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
             const loginBtn = document.getElementById('loginBtn');
@@ -300,26 +307,65 @@
             loginBtn.disabled = true;
             btnText.innerHTML = '<span class="spinner"></span> Autenticando...';
 
+            console.log('🔓 Intentando login con:', email);
+
             try {
-                // Intentar login con Supabase Auth
-                const { data, error } = await supabase.auth.signInWithPassword({
-                    email: email,
-                    password: password
-                });
-
-                if (error) {
-                    throw new Error(error.message);
-                }
-
-                if (data.user) {
-                    // Guardar datos del usuario
-                    localStorage.setItem('user', JSON.stringify(data.user));
-                    localStorage.setItem('token', data.session.access_token);
+                if (!isConfigured && SUPABASE_CONFIG.DEMO_MODE) {
+                    // DEMO MODE: permitir logins de demostración
+                    console.log('🎮 Using DEMO MODE credentials');
                     
-                    showMessage('✅ Login exitoso. Redirigiendo...', 'success');
+                    const demoUsers = {
+                        'doctor@clinica.com': { id: 1, name: 'Dr. Carlos García', role: 'doctor' },
+                        'doctor2@clinica.com': { id: 2, name: 'Dra. María González', role: 'doctor' },
+                        'secretaria@clinica.com': { id: 3, name: 'Ana Martínez', role: 'secretaria' },
+                        'admin@clinica.com': { id: 4, name: 'Admin Clínica', role: 'admin' }
+                    };
+
+                    if (demoUsers[email] && password === '123456') {
+                        const user = demoUsers[email];
+                        const demoToken = 'demo_token_' + Date.now();
+                        
+                        localStorage.setItem('user', JSON.stringify({
+                            id: user.id,
+                            email: email,
+                            user_metadata: { name: user.name, role: user.role }
+                        }));
+                        localStorage.setItem('token', demoToken);
+                        localStorage.setItem('demo_mode', 'true');
+                        
+                        console.log('✅ Demo login exitoso:', user.name);
+                        showMessage('✅ Login exitoso (Demo). Redirigiendo...', 'success');
+                    } else {
+                        console.error('❌ Credenciales inválidas en demo mode');
+                        showMessage('❌ Credenciales inválidas. Intenta: doctor@clinica.com / 123456', 'error');
+                        loginBtn.disabled = false;
+                        btnText.textContent = 'Iniciar Sesión';
+                    }
+                } else if (isConfigured && supabase) {
+                    // LOGIN REAL CON SUPABASE
+                    const { data, error } = await supabase.auth.signInWithPassword({
+                        email: email,
+                        password: password
+                    });
+
+                    if (error) {
+                        console.error('❌ Error Supabase:', error.message);
+                        throw error;
+                    }
+
+                    if (data.user) {
+                        localStorage.setItem('user', JSON.stringify(data.user));
+                        localStorage.setItem('token', data.session.access_token);
+                        localStorage.setItem('demo_mode', 'false');
+                        
+                        console.log('✅ Login Supabase exitoso:', data.user.email);
+                        showMessage('✅ Login exitoso. Redirigiendo...', 'success');
+                    }
+                } else {
+                    throw new Error('Supabase no está configurado. Abre config.js y actualiza SUPABASE_CONFIG');
                 }
             } catch (error) {
-                console.error('Error de login:', error);
+                console.error('❌ Error en login:', error);
                 showMessage(`❌ Error: ${error.message}`, 'error');
                 loginBtn.disabled = false;
                 btnText.textContent = 'Iniciar Sesión';
@@ -333,6 +379,7 @@
             // Si ya está logueado, redirigir a dashboard
             const user = localStorage.getItem('user');
             if (user) {
+                console.log('ℹ️  Usuario ya está logueado, redirigiendo...');
                 window.location.href = 'dashboard.html';
             }
         });

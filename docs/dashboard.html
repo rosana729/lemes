@@ -7,6 +7,7 @@
     <link rel="stylesheet" href="style.css">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="config.js"></script>
     <style>
         .dashboard-container {
             min-height: 100vh;
@@ -324,10 +325,11 @@
     </div>
 
     <script>
-        // Configuración de Supabase
-        const SUPABASE_URL = 'https://your-project.supabase.co';
-        const SUPABASE_KEY = 'your-anon-key';
+        // Usar configuración de config.js si está disponible
         const API_URL = 'http://localhost:8000';
+        const DEMO_MODE = (window.SUPABASE_CONFIG && window.SUPABASE_CONFIG.DEMO_MODE) || false;
+        const SUPABASE_URL = (window.SUPABASE_CONFIG && window.SUPABASE_CONFIG.SUPABASE_URL) || 'https://your-project.supabase.co';
+        const SUPABASE_KEY = (window.SUPABASE_CONFIG && window.SUPABASE_CONFIG.SUPABASE_KEY) || 'your-anon-key';
 
         let supabase;
         let currentUser = null;
@@ -335,7 +337,14 @@
         // Inicializar Supabase
         function initSupabase() {
             try {
-                supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+                if (window.supabase && SUPABASE_URL !== 'https://your-project.supabase.co') {
+                    supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+                    console.log('✅ Supabase inicializado correctamente');
+                } else if (DEMO_MODE) {
+                    console.log('🔧 Modo Demo activado - usando credenciales de prueba');
+                } else {
+                    console.warn('⚙️ Supabase no configurado. Completa la configuración en config.js');
+                }
             } catch (error) {
                 console.error('Error inicializando Supabase:', error);
             }
@@ -344,10 +353,17 @@
         // Verificar si está logueado
         function checkAuth() {
             const user = localStorage.getItem('user');
+            const token = localStorage.getItem('token');
             
-            if (user) {
-                currentUser = JSON.parse(user);
-                showDashboard();
+            if (user && token) {
+                try {
+                    currentUser = JSON.parse(user);
+                    showDashboard();
+                } catch (error) {
+                    console.error('Error al parsear usuario:', error);
+                    clearAuthStorage();
+                    showLoginPrompt();
+                }
             } else {
                 showLoginPrompt();
             }
@@ -365,8 +381,9 @@
             // Mostrar datos del usuario
             const email = currentUser.email || 'Usuario';
             const initials = email.substring(0, 2).toUpperCase();
+            const userName = currentUser.name || currentUser.user_metadata?.name || email.split('@')[0];
             
-            document.getElementById('userName').textContent = currentUser.user_metadata?.name || email.split('@')[0];
+            document.getElementById('userName').textContent = userName;
             document.getElementById('userEmail').textContent = email;
             document.getElementById('userAvatar').textContent = initials;
 
@@ -402,6 +419,8 @@
                     });
                 } else {
                     console.warn('No se pudo cargar estadísticas');
+                    // Mostrar valores por defecto
+                    showResponseError('⚠️ No se pudo conectar a la API. Asegúrate de que:\n1. El servidor está ejecutándose en http://localhost:8000\n2. python main.py está activo');
                 }
             } catch (error) {
                 console.error('Error cargando estadísticas:', error);
@@ -439,27 +458,36 @@
         // Mostrar error
         function showResponseError(message) {
             const responseBox = document.getElementById('responseBox');
-            responseBox.style.display = 'block';
-            responseBox.classList.add('error');
-            document.getElementById('responseContent').textContent = message;
+            if (responseBox) {
+                responseBox.style.display = 'block';
+                responseBox.classList.add('error');
+                document.getElementById('responseContent').textContent = message;
+            }
+        }
+
+        // Limpiar almacenamiento de autenticación
+        function clearAuthStorage() {
+            localStorage.removeItem('user');
+            localStorage.removeItem('token');
         }
 
         // Logout
-        document.getElementById('logoutBtn').addEventListener('click', async () => {
-            try {
-                if (supabase) {
-                    await supabase.auth.signOut();
+        const logoutBtn = document.getElementById('logoutBtn');
+        if (logoutBtn) {
+            logoutBtn.addEventListener('click', async () => {
+                try {
+                    if (supabase && !DEMO_MODE) {
+                        await supabase.auth.signOut();
+                    }
+                    clearAuthStorage();
+                    window.location.href = 'login.html';
+                } catch (error) {
+                    console.error('Error en logout:', error);
+                    clearAuthStorage();
+                    window.location.href = 'login.html';
                 }
-                localStorage.removeItem('user');
-                localStorage.removeItem('token');
-                window.location.href = 'login.html';
-            } catch (error) {
-                console.error('Error en logout:', error);
-                localStorage.removeItem('user');
-                localStorage.removeItem('token');
-                window.location.href = 'login.html';
-            }
-        });
+            });
+        }
 
         // Inicializar cuando carga la página
         window.addEventListener('load', () => {
