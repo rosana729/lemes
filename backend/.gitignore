@@ -1,0 +1,23 @@
+# Symfony
+/bin/
+/vendor/
+/var/
+/.env.local
+/.env.*.local
+/symfony.lock
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Node (si usas webpack)
+/node_modules/
+/yarn.lock
+/package-lock.json
