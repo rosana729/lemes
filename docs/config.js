@@ -5,11 +5,11 @@
 
 const SUPABASE_CONFIG = {
     // 👇 REEMPLAZA CON TUS VALORES DE SUPABASE
-    URL: 'https://your-project.supabase.co',      // Ve a: Supabase > Settings > API > Project URL
-    KEY: 'your-anon-key',                          // Ve a: Supabase > Settings > API > anon public key
+    URL: 'https://ikqwnmcowwakkxjwevbr.supabase.co',      // Ve a: Supabase > Settings > API > Project URL
+    KEY: 'ikqwnmcowwakkxjwevbr',                          // Ve a: Supabase > Settings > API > anon public key
     
     // Estos son opcionales, para usuarios sin Supabase aún
-    DEMO_MODE: true,                               // Si es true, permite login de demostración
+    DEMO_MODE: false,                               // Si es true, permite login de demostración
 };
 
 // ════════════════════════════════════════════════════════════════════════════
