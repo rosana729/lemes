@@ -258,6 +258,7 @@
 
     <script>
         // Configuración desde config.js
+        const API_URL = 'http://localhost:8000';
         let supabase = null;
         const isConfigured = SUPABASE_CONFIG.URL !== 'https://your-project.supabase.co';
 
@@ -267,16 +268,13 @@
                 if (isConfigured) {
                     supabase = window.supabase.createClient(SUPABASE_CONFIG.URL, SUPABASE_CONFIG.KEY);
                     console.log('✅ Supabase inicializado correctamente');
-                    document.getElementById('debugInfo').innerHTML = '✅ <strong>Supabase:</strong> Conectado';
-                } else if (SUPABASE_CONFIG.DEMO_MODE) {
-                    console.log('🎮 MODO DEMOSTRACIÓN activado');
-                    document.getElementById('debugInfo').innerHTML = '🎮 <strong>Modo:</strong> Demostración (sin Supabase)';
+                    document.getElementById('debugInfo').innerHTML = '✅ <strong>Backend:</strong> FastAPI (http://localhost:8000)';
                 } else {
-                    console.error('❌ Supabase no está configurado');
-                    document.getElementById('debugInfo').innerHTML = '❌ <strong>Error:</strong> Supabase no configurado. Abre config.js';
+                    console.log('ℹ️ Backend FastAPI requerido en http://localhost:8000');
+                    document.getElementById('debugInfo').innerHTML = 'ℹ️ <strong>Backend:</strong> FastAPI (http://localhost:8000) requerido';
                 }
             } catch (error) {
-                console.error('❌ Error inicializando Supabase:', error);
+                console.error('❌ Error inicializando:', error);
                 document.getElementById('debugInfo').innerHTML = '❌ <strong>Error:</strong> ' + error.message;
             }
         }
@@ -310,63 +308,52 @@
             console.log('🔓 Intentando login con:', email);
 
             try {
-                if (!isConfigured && SUPABASE_CONFIG.DEMO_MODE) {
-                    // DEMO MODE: permitir logins de demostración
-                    console.log('🎮 Using DEMO MODE credentials');
-                    
-                    const demoUsers = {
-                        'doctor@clinica.com': { id: 1, name: 'Dr. Carlos García', role: 'doctor' },
-                        'doctor2@clinica.com': { id: 2, name: 'Dra. María González', role: 'doctor' },
-                        'secretaria@clinica.com': { id: 3, name: 'Ana Martínez', role: 'secretaria' },
-                        'admin@clinica.com': { id: 4, name: 'Admin Clínica', role: 'admin' }
-                    };
-
-                    if (demoUsers[email] && password === '123456') {
-                        const user = demoUsers[email];
-                        const demoToken = 'demo_token_' + Date.now();
-                        
-                        localStorage.setItem('user', JSON.stringify({
-                            id: user.id,
-                            email: email,
-                            user_metadata: { name: user.name, role: user.role }
-                        }));
-                        localStorage.setItem('token', demoToken);
-                        localStorage.setItem('demo_mode', 'true');
-                        
-                        console.log('✅ Demo login exitoso:', user.name);
-                        showMessage('✅ Login exitoso (Demo). Redirigiendo...', 'success');
-                    } else {
-                        console.error('❌ Credenciales inválidas en demo mode');
-                        showMessage('❌ Credenciales inválidas. Intenta: doctor@clinica.com / 123456', 'error');
-                        loginBtn.disabled = false;
-                        btnText.textContent = 'Iniciar Sesión';
-                    }
-                } else if (isConfigured && supabase) {
-                    // LOGIN REAL CON SUPABASE
-                    const { data, error } = await supabase.auth.signInWithPassword({
+                // LOGIN CON FASTAPI BACKEND
+                const response = await fetch(`${API_URL}/api/login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
                         email: email,
-                        password: password
-                    });
+                        contraseña: password
+                    })
+                });
 
-                    if (error) {
-                        console.error('❌ Error Supabase:', error.message);
-                        throw error;
-                    }
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.detail || 'Error en autenticación');
+                }
 
-                    if (data.user) {
-                        localStorage.setItem('user', JSON.stringify(data.user));
-                        localStorage.setItem('token', data.session.access_token);
-                        localStorage.setItem('demo_mode', 'false');
-                        
-                        console.log('✅ Login Supabase exitoso:', data.user.email);
-                        showMessage('✅ Login exitoso. Redirigiendo...', 'success');
-                    }
+                const data = await response.json();
+
+                if (data.access_token) {
+                    // Guardar datos del usuario
+                    const usuario = data.usuario;
+                    localStorage.setItem('user', JSON.stringify({
+                        id: usuario.id,
+                        email: usuario.email,
+                        nombre: usuario.nombre,
+                        rol: usuario.rol,
+                        name: usuario.nombre
+                    }));
+                    localStorage.setItem('token', data.access_token);
+                    localStorage.setItem('demo_mode', 'false');
+                    
+                    console.log('✅ Login exitoso:', usuario.email);
+                    showMessage('✅ Login exitoso. Redirigiendo...', 'success');
                 } else {
-                    throw new Error('Supabase no está configurado. Abre config.js y actualiza SUPABASE_CONFIG');
+                    throw new Error('No se recibió token de autenticación');
                 }
             } catch (error) {
                 console.error('❌ Error en login:', error);
-                showMessage(`❌ Error: ${error.message}`, 'error');
+                
+                if (error.message.includes('Failed to fetch')) {
+                    showMessage('❌ No se pudo conectar a: ' + API_URL + '. ¿Está corriendo FastAPI?', 'error');
+                } else {
+                    showMessage(`❌ ${error.message}`, 'error');
+                }
+                
                 loginBtn.disabled = false;
                 btnText.textContent = 'Iniciar Sesión';
             }

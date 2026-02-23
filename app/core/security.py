@@ -18,9 +18,14 @@ class TokenData(BaseModel):
 
 
 def verificar_contraseña(contraseña_plana: str, hash_contraseña: str) -> bool:
-    """Verifica que la contraseña coincida con el hash"""
+    """Verifica que la contraseña coincida con el hash o con texto plano"""
     if not contraseña_plana or not hash_contraseña:
         return False
+    
+    # Si la contraseña almacenada es texto plano (para demo)
+    if not '$' in hash_contraseña:
+        return contraseña_plana == hash_contraseña
+    
     try:
         # Extraer el salt y el hash
         salt, hash_almacenado = hash_contraseña.rsplit('$', 1)
